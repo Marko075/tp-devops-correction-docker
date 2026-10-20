@@ -112,6 +112,12 @@
 					</execution>
 				</executions>
 			</plugin>
+			<!-- Plugin SonarCloud : permet à "mvn sonar:sonar" d'envoyer l'analyse -->
+			<plugin>
+				<groupId>org.sonarsource.scanner.maven</groupId>
+				<artifactId>sonar-maven-plugin</artifactId>
+				<version>5.0.0.4389</version>
+			</plugin>
 		</plugins>
 	</build>
 
