@@ -25,7 +25,7 @@ jobs:
 
       # Analyse de qualité du code avec SonarCloud (quality gate)
       - name: SonarCloud analysis
-        run: mvn -B verify sonar:sonar -Dsonar.projectKey=marko075 -Dsonar.organization=marko075 -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }} --file ./simple-api/pom.xml
+        run: mvn -B -e verify sonar:sonar -Dsonar.projectKey=marko075 -Dsonar.organization=marko075 -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }} --file ./simple-api/pom.xml
 
   build-and-push-docker-image:
     # Ne démarre que si test-backend est passé
