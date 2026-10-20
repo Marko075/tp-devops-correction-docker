@@ -22,3 +22,44 @@ jobs:
       # Compile et lance les tests unitaires + d'intégration (Testcontainers)
       - name: Build and test with Maven
         run: mvn clean verify --file simple-api/pom.xml
+
+  build-and-push-docker-image:
+    # Ne démarre que si test-backend est passé
+    needs: test-backend
+    runs-on: ubuntu-24.04
+
+    steps:
+      # Récupère le code du dépôt dans le runner
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Connexion à Docker Hub avec les secrets GitHub
+      - name: Login to DockerHub
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+      # Image de l'API (dossier simple-api)
+      - name: Build image and push backend
+        uses: docker/build-push-action@v6
+        with:
+          # dossier qui contient le Dockerfile de l'API
+          context: ./simple-api
+          # les tags doivent être en minuscules
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-simple-api:latest
+          # build sur toutes les branches, push seulement sur main
+          push: ${{ github.ref == 'refs/heads/main' }}
+
+      # Image de la base de données (dossier database)
+      - name: Build image and push database
+        uses: docker/build-push-action@v6
+        with:
+          context: ./database
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-database:latest
+          push: ${{ github.ref == 'refs/heads/main' }}
+
+      # Image du serveur HTTP (dossier http-server)
+      - name: Build image and push httpd
+        uses: docker/build-push-action@v6
+        with:
+          context: ./http-server
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-httpd:latest
+          push: ${{ github.ref == 'refs/heads/main' }}
