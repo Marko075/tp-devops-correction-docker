@@ -1,0 +1,13 @@
+
+- name: Launch front
+  community.docker.docker_container:
+    name: front
+    image: "{{ docker_hub_user }}/tp-devops-front:latest"
+    state: started
+    restart_policy: unless-stopped
+    pull: true
+    recreate: true
+    networks:
+      - name: "{{ docker_network }}"
+  vars:
+    ansible_python_interpreter: /opt/docker_venv/bin/python
