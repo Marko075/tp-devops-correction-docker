@@ -1,0 +1,4 @@
+docker_hub_user: marko075king
+postgres_db: db
+postgres_user: usr
+docker_network: app-network

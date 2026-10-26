@@ -71,3 +71,49 @@ jobs:
           context: ./http-server
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-httpd:latest
           push: ${{ github.ref == 'refs/heads/main' }}
+
+  deploy:
+    name: Deploy with Ansible
+    needs: build-and-push-docker-image
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Ansible and Docker collection
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ansible
+          ansible-galaxy collection install community.docker
+
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Configure Ansible Vault
+        env:
+          VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT_PASSWORD }}
+        run: |
+          printf '%s\n' "$VAULT_PASSWORD" > ~/.vault_password
+          chmod 600 ~/.vault_password
+
+      - name: Deploy application
+        env:
+          SSH_USER: ${{ secrets.SSH_USER }}
+        run: |
+          ansible-playbook \
+            -i ansible/inventories/setup.yml \
+            ansible/playbook.yml \
+            --vault-password-file ~/.vault_password \
+            -e "ansible_user=$SSH_USER" \
+            -e "ansible_ssh_private_key_file=$HOME/.ssh/id_rsa"

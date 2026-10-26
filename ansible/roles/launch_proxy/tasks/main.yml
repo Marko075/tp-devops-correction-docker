@@ -1,0 +1,12 @@
+- name: Launch proxy
+  community.docker.docker_container:
+    name: httpd
+    image: "{{ docker_hub_user }}/tp-devops-httpd:latest"
+    state: started
+    restart_policy: unless-stopped
+    ports:
+      - "80:80"
+    networks:
+      - name: "{{ docker_network }}"
+  vars:
+    ansible_python_interpreter: /opt/docker_venv/bin/python

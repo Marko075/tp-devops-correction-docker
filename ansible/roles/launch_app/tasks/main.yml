@@ -1,0 +1,16 @@
+- name: Launch backend API
+  community.docker.docker_container:
+    name: simple-api
+    image: "{{ docker_hub_user }}/tp-devops-simple-api:latest"
+    pull: true
+    state: started
+    recreate: true
+    restart_policy: unless-stopped
+    env:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://database:5432/{{ postgres_db }}"
+      SPRING_DATASOURCE_USERNAME: "{{ postgres_user }}"
+      SPRING_DATASOURCE_PASSWORD: "{{ postgres_password }}"
+    networks:
+      - name: "{{ docker_network }}"
+  vars:
+    ansible_python_interpreter: /opt/docker_venv/bin/python
